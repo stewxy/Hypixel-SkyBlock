@@ -1,17 +1,15 @@
 import requests
 from requests.auth import HTTPBasicAuth
 
+api_key = ""
+api_uuid = ""
+
 url = "https://api.hypixel.net/v2/skyblock/profile"
-api_url = "https://api.hypixel.net/skyblock/profiles?key=[]&uuid=[]"
-r = requests.get(api_url)
-print(r.json())
+api_url = "https://api.hypixel.net/skyblock/profiles?key={key}&uuid={uuid}".format(key = api_key, uuid = api_uuid)
+response = requests.get(api_url)
 
-headers = {'Accept': 'application/json'}
-auth = HTTPBasicAuth('apikey', "")
-payload = {}
-
-response = requests.get(url, headers=headers, auth=auth)
-print(response.json())
-print(response.status_code)
+profiles = (response.json()).get("profiles")
+collection = sorted(profiles[0].get('members').get(api_uuid).get("unlocked_coll_tiers"))
+print(collection)
 
 
