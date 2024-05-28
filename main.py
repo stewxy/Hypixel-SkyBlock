@@ -8,7 +8,7 @@ client = commands.Bot(command_prefix="!", intents=intents)
 
 api_key = ""
 api_uuid = ""
-api_url = "https://api.hypixel.net/skyblock/profiles?key={key}&uuid={uuid}".format(key = api_key, uuid = api_uuid)
+api_url = "https://api.hypixel.net/skyblock/profiles?key={key}&uuid={uuid}".format(key=api_key, uuid=api_uuid)
 
 
 @client.event
@@ -28,7 +28,9 @@ async def get_bazaar(ctx, *item):
 
     bazaar_link = "https://api.hypixel.net/v2/skyblock/bazaar"
     bazaar_response = requests.get(bazaar_link)
-    listing = bazaar_response.json().get("products").get(processed_text).get("quick_status")
+    try:
+        listing = bazaar_response.json().get("products").get(processed_text).get("quick_status")
+    except Exception as e: await ctx.send("COULDN'T FIND PRODUCT")
     product_id = listing.get("productId")
     sell_price = round(listing.get("sellPrice"), 2)
     buy_price = round(listing.get("buyPrice"), 2)
@@ -44,8 +46,5 @@ async def get_bazaar(ctx, *item):
 #     await ctx.send(collection)
 
 
-
-
-#https://api.mojang.com/users/profiles/minecraft/{username}?
-
+# https://api.mojang.com/users/profiles/minecraft/{username}?
 client.run("")
