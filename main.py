@@ -8,6 +8,7 @@ client = commands.Bot(command_prefix="!", intents=intents)
 
 api_key = ""
 api_uuid = ""
+api_url = "https://api.hypixel.net/skyblock/profiles?key={key}&uuid={uuid}".format(key = api_key, uuid = api_uuid)
 
 
 @client.event
@@ -20,22 +21,22 @@ async def ping(ctx):
     await ctx.send("pong")
 
 
-api_url = "https://api.hypixel.net/skyblock/profiles?key={key}&uuid={uuid}".format(key = api_key, uuid = api_uuid)
-response = requests.get(api_url)
+@client.command(aliases=['b'])
+async def get_bazaar(ctx):
+    bazaar_link = "https://api.hypixel.net/v2/skyblock/bazaar"
+    bazaar_response = requests.get(bazaar_link)
+    listing = bazaar_response.json().get("products").get("ENDER_PEARL").get("quick_status")
+    await ctx.send(listing)
 
-profiles = (response.json()).get("profiles")
-#print(profiles)
-# collection = sorted(profiles[0].get('members').get(api_uuid).get("unlocked_coll_tiers"))
-# print(collection)
-collection = sorted(profiles[0].get('members').get(api_uuid).get("unlocked_coll_tiers"))
-#print(collection)
 
-u2 = "https://api.hypixel.net/v2/skyblock/bazaar"
-r = requests.get(u2)
-x = r.json().get("products").get("ENDER_PEARL").get("quick_status")
-print(x)
-# for item in x:
-#     print(item)
+@client.command(aliases=['c'])
+async def get_collection(ctx):
+    response = requests.get(api_url)
+    profiles = (response.json()).get("profiles")
+    collection = sorted(profiles[0].get('members').get(api_uuid).get("unlocked_coll_tiers"))
+    await ctx.send(collection)
+
+
 
 
 
