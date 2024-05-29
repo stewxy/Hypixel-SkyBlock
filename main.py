@@ -1,7 +1,6 @@
 import requests
 import discord
 from discord.ext import commands
-from requests.auth import HTTPBasicAuth
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="!", intents=intents)
@@ -30,13 +29,39 @@ async def get_bazaar(ctx, *item):
     bazaar_response = requests.get(bazaar_link)
     try:
         listing = bazaar_response.json().get("products").get(processed_text).get("quick_status")
-    except Exception as e: await ctx.send("COULDN'T FIND PRODUCT")
-    product_id = listing.get("productId")
-    sell_price = round(listing.get("sellPrice"), 2)
-    buy_price = round(listing.get("buyPrice"), 2)
-    format_text = f"Item: {product_id} \nSell Price: {sell_price} \nBuy Price: {buy_price}"
-    await ctx.send(format_text)
+        product_id = listing.get("productId")
+        sell_price = round(listing.get("sellPrice"), 2)
+        buy_price = round(listing.get("buyPrice"), 2)
+        format_text = f"Item: {product_id} \nSell Price: {sell_price} \nBuy Price: {buy_price}"
+        await ctx.send(format_text)
+    except AttributeError as e:
+        await ctx.send("COULDN'T FIND ITEM")
 
+
+@client.command(aliases=['ah'])
+async def get_auctions(ctx):
+    # join_text = ' '.join(item)
+    # processed_text = join_text.upper().replace(" ", "_").strip()
+
+    ah_link = "https://api.hypixel.net/v2/skyblock/auctions"
+    ah_response = requests.get(ah_link)
+    listing = ah_response.json()
+    items = listing.get("auctions")
+    pages = listing.get("totalPages")
+
+    for i in range(pages):
+
+
+    for item in items:
+        print(item.get("item_name"))
+    #print(items[0])
+    #await ctx.send(listing)
+        #.get("products").get(processed_text).get("quick_status")
+    # product_id = listing.get("productId")
+    # sell_price = round(listing.get("sellPrice"), 2)
+    # buy_price = round(listing.get("buyPrice"), 2)
+    # format_text = f"Item: {product_id} \nSell Price: {sell_price} \nBuy Price: {buy_price}"
+    # await ctx.send(format_text)
 
 # @client.command(aliases=['c'])
 # async def get_collection(ctx):
