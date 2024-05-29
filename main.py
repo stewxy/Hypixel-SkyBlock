@@ -50,9 +50,10 @@ async def getting_auctions(session, url):
                 name = auction.get("item_name")
                 highest_bid = str(auction.get("highest_bid_amount"))
                 starting_bid = str(auction.get("starting_bid"))
-                if items != "":
-                    items += "\n"
-                items += ("Item: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\n")
+                if items == "":
+                    items += ("Item: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\n")
+                else:
+                    items += ("\nItem: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\n")
         return items
 
 
@@ -71,9 +72,11 @@ async def get_auctions(ctx):
             tasks.append(asyncio.ensure_future(getting_auctions(session, ah_link)))
 
         original = await asyncio.gather(*tasks)
+        format_string = ""
         for item in original:
             if item != "":
-                print(item)
+                format_string += item + "\n"
+        await ctx.send(format_string)
 
 
 # @client.command(aliases=['c'])
