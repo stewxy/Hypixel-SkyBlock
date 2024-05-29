@@ -51,10 +51,15 @@ async def getting_auctions(session, url, item_name):
                 name = auction.get("item_name")
                 highest_bid = str(auction.get("highest_bid_amount"))
                 starting_bid = str(auction.get("starting_bid"))
-                if items == "":
-                    items += ("Item: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\n")
+                rarity = auction.get("tier")
+                if auction.get("bin") == True:
+                    bin = "Available"
                 else:
-                    items += ("\nItem: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\n")
+                    bin = "Unavailable"
+                if items == "":
+                    items += ("Item: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\nRarity: " + rarity + "\nBIN: " + bin + "\n")
+                else:
+                    items += ("\nItem: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\nRarity: " + rarity + "\nBIN: " + bin + "\n")
         return items
 
 
@@ -76,13 +81,15 @@ async def get_auctions(ctx, *item):
             tasks.append(asyncio.ensure_future(getting_auctions(session, ah_link, join_text)))
 
         original = await asyncio.gather(*tasks)
-        print(original)
+        if (len(list(filter(None, original)))) == 0:
+            await ctx.send("NO AUCTIONS FOUND FOR THIS ITEM")
+            return
+
         format_string = ""
         for item in original:
             if item != "":
                 format_string += item + "\n"
                 await ctx.send(format_string)
-
 
 
 # @client.command(aliases=['c'])
