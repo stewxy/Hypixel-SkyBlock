@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 import aiohttp
 import asyncio
+import re
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="!", intents=intents)
@@ -40,13 +41,13 @@ async def get_bazaar(ctx, *item):
         await ctx.send("COULDN'T FIND ITEM")
 
 
-async def getting_auctions(session, url):
+async def getting_auctions(session, url, item_name):
     async with session.get(url) as resp:
         auctions = await resp.json()
         items = ""
         for auction in auctions.get("auctions"):
-            if "Giant Mender Fedora" in auction.get("item_name"):
-                global counter
+            re_item_name = re.sub("\[.*?\]", "", auction.get("item_name")).replace("✪", "").strip().upper()
+            if item_name == re_item_name:
                 name = auction.get("item_name")
                 highest_bid = str(auction.get("highest_bid_amount"))
                 starting_bid = str(auction.get("starting_bid"))
@@ -58,7 +59,10 @@ async def getting_auctions(session, url):
 
 
 @client.command(aliases=['ah'])
-async def get_auctions(ctx):
+async def get_auctions(ctx, *item):
+    join_text = ''.join(item).upper()
+    print(join_text)
+
     ah_link = "https://api.hypixel.net/v2/skyblock/auctions"
     ah_response = requests.get(ah_link)
     listing = ah_response.json()
@@ -69,14 +73,16 @@ async def get_auctions(ctx):
 
         for i in range(pages):
             ah_link = f"https://api.hypixel.net/v2/skyblock/auctions?page={i}"
-            tasks.append(asyncio.ensure_future(getting_auctions(session, ah_link)))
+            tasks.append(asyncio.ensure_future(getting_auctions(session, ah_link, join_text)))
 
         original = await asyncio.gather(*tasks)
+        print(original)
         format_string = ""
         for item in original:
             if item != "":
                 format_string += item + "\n"
-        await ctx.send(format_string)
+                await ctx.send(format_string)
+
 
 
 # @client.command(aliases=['c'])
