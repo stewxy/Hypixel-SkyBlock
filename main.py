@@ -1,6 +1,8 @@
 import requests
 import discord
 from discord.ext import commands
+import aiohttp
+import asyncio
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="!", intents=intents)
@@ -38,30 +40,41 @@ async def get_bazaar(ctx, *item):
         await ctx.send("COULDN'T FIND ITEM")
 
 
+async def getting_auctions(session, url):
+    async with session.get(url) as resp:
+        auctions = await resp.json()
+        items = ""
+        for auction in auctions.get("auctions"):
+            if "Giant Mender Fedora" in auction.get("item_name"):
+                global counter
+                name = auction.get("item_name")
+                highest_bid = str(auction.get("highest_bid_amount"))
+                starting_bid = str(auction.get("starting_bid"))
+                if items != "":
+                    items += "\n"
+                items += ("Item: " + name + "\nStarting bid: " + starting_bid + "\nHighest Bid: " + highest_bid + "\n")
+        return items
+
+
 @client.command(aliases=['ah'])
 async def get_auctions(ctx):
-    # join_text = ' '.join(item)
-    # processed_text = join_text.upper().replace(" ", "_").strip()
-
     ah_link = "https://api.hypixel.net/v2/skyblock/auctions"
     ah_response = requests.get(ah_link)
     listing = ah_response.json()
-    items = listing.get("auctions")
     pages = listing.get("totalPages")
 
-    for i in range(pages):
+    async with aiohttp.ClientSession() as session:
+        tasks = []
 
+        for i in range(pages):
+            ah_link = f"https://api.hypixel.net/v2/skyblock/auctions?page={i}"
+            tasks.append(asyncio.ensure_future(getting_auctions(session, ah_link)))
 
-    for item in items:
-        print(item.get("item_name"))
-    #print(items[0])
-    #await ctx.send(listing)
-        #.get("products").get(processed_text).get("quick_status")
-    # product_id = listing.get("productId")
-    # sell_price = round(listing.get("sellPrice"), 2)
-    # buy_price = round(listing.get("buyPrice"), 2)
-    # format_text = f"Item: {product_id} \nSell Price: {sell_price} \nBuy Price: {buy_price}"
-    # await ctx.send(format_text)
+        original = await asyncio.gather(*tasks)
+        for item in original:
+            if item != "":
+                print(item)
+
 
 # @client.command(aliases=['c'])
 # async def get_collection(ctx):
